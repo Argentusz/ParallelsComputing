@@ -87,6 +87,7 @@ int main(int argc, char ** argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     if (size != COMM_SIZE) {
         if (rank == 0) printf("Expected Comm_size: %d. Got: %d\n", COMM_SIZE, size);
+        MPI_Finalize();
         return EINVAL;
     }
 
