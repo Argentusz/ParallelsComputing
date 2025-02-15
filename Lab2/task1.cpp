@@ -63,7 +63,7 @@ void serveRank(MailInfo * mi, int client) {
     if (client == mi->rank) {
         MPI_Send(&mi->aGenerated, 1, MPI_INT, mi->aReceiver, mi->rank * 10 + mi->aReceiver, MPI_COMM_WORLD);
         MPI_Send(&mi->bGenerated, 1, MPI_INT, mi->bReceiver, mi->rank * 10 + mi->bReceiver, MPI_COMM_WORLD);
-	return;
+        return;
     }
 
     if (client == mi->aSender) {
