@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <mpi.h>
 #include <random>
+#include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
 
 #define element_t float
 #define row_t     float *
@@ -8,7 +11,9 @@
 
 #define error_t unsigned char
 #define ERR_VAL 1
+#define ERR_CLK 2
 
+#define BILLION  1000000000L
 typedef struct SqareMatrix {
     matrix_t data;
     size_t size;
@@ -55,12 +60,20 @@ SqaureMatrix smGenerate(size_t size) {
 }
 
 int main(int argc, char** argv) {
-    // Initialize MPI
     MPI_Init(&argc, &argv);
 
     int rank, size;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    struct timespec start, stop;
+    if (rank == 0) {
+        if (clock_gettime(CLOCK_REALTIME, &start) == -1) {
+            printf("could not get clock time");
+            return ERR_CLK;
+        }
+    }
+    
     if (size < 2) {
         if (rank == 0) printf("Expected more than one process\n");
         MPI_Finalize();
@@ -100,8 +113,18 @@ int main(int argc, char** argv) {
     }
 
     if (rank == 0) {
+        if (clock_gettime(CLOCK_REALTIME, &stop) == -1) {
+            printf("could not get stop clock time");
+            return ERR_CLK;
+        }
+
         printf("Row echelon form of original matrix:\n");
         smPrint(sm);
+        
+        double accum = ( stop.tv_sec - start.tv_sec )
+             + (double)( stop.tv_nsec - start.tv_nsec )
+               / (double)BILLION;
+        printf( "Time elapsed: %lfs\n", accum);
     }
 
     MPI_Finalize();
